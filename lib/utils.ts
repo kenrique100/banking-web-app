@@ -5,13 +5,6 @@ import { twMerge } from "tailwind-merge";
 import { z } from "zod";
 
 
-const dateOfBirthValidator = z.string().refine(date => {
-  const regex = /^\d{4}-\d{2}-\d{2}$/;
-  return regex.test(date);
-}, {
-  message: "DateOfBirth must be in YYYY-MM-DD format",
-});
-
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
