@@ -53,9 +53,42 @@ export const signIn = async ({ email, password }: signInProps) => {
 }
 
 export const signUp = async ({ password, ...userData }: SignUpParams) => {
-  const { email, firstName, lastName } = userData;
+  const { email, firstName, lastName, dateOfBirth, postalCode } = userData;
   
   let newUserAccount;
+
+  // Helper functions for validation
+  const isValidDate = (dateString: string) => {
+    const regex = /^\d{4}-\d{2}-\d{2}$/;
+    return regex.test(dateString) && !isNaN(new Date(dateString).getTime());
+  };
+
+  const formatDate = (dateString: string) => {
+    const [year, month, day] = dateString.split(/[-\/]/);
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  };
+
+  const isValidPostalCode = (postalCode: string) => {
+    // Simple US postal code validation. Adjust for other countries as needed.
+    const regex = /^\d{5}(-\d{4})?$/;
+    return regex.test(postalCode);
+  };
+
+  // Add logging to verify input
+  console.log('SignUp input:', { email, firstName, lastName, dateOfBirth, postalCode });
+
+  // Validate and format dateOfBirth
+  const formattedDateOfBirth = formatDate(dateOfBirth);
+  if (!isValidDate(formattedDateOfBirth)) {
+    console.error('Invalid date of birth format. Expected YYYY-MM-DD.');
+    throw new Error(`Invalid date of birth format: ${dateOfBirth}`);
+  }
+
+  // Validate postalCode
+  if (!isValidPostalCode(postalCode)) {
+    console.error('Invalid postal code format.');
+    throw new Error(`Invalid postal code format: ${postalCode}`);
+  }
 
   try {
     const { account, database } = await createAdminClient();
@@ -67,14 +100,15 @@ export const signUp = async ({ password, ...userData }: SignUpParams) => {
       `${firstName} ${lastName}`
     );
 
-    if(!newUserAccount) throw new Error('Error creating user')
+    if (!newUserAccount) throw new Error('Error creating user');
 
     const dwollaCustomerUrl = await createDwollaCustomer({
       ...userData,
+      dateOfBirth: formattedDateOfBirth,
       type: 'personal'
-    })
+    });
 
-    if(!dwollaCustomerUrl) throw new Error('Error creating Dwolla customer')
+    if (!dwollaCustomerUrl) throw new Error('Error creating Dwolla customer');
 
     const dwollaCustomerId = extractCustomerIdFromUrl(dwollaCustomerUrl);
 
@@ -84,11 +118,12 @@ export const signUp = async ({ password, ...userData }: SignUpParams) => {
       ID.unique(),
       {
         ...userData,
+        dateOfBirth: formattedDateOfBirth,
         userId: newUserAccount.$id,
         dwollaCustomerId,
         dwollaCustomerUrl
       }
-    )
+    );
 
     const session = await account.createEmailPasswordSession(email, password);
 
@@ -101,7 +136,8 @@ export const signUp = async ({ password, ...userData }: SignUpParams) => {
 
     return parseStringify(newUser);
   } catch (error) {
-    console.error('Error', error);
+    console.error('Error during sign up:', error);
+    throw new Error('Sign-up process failed.');
   }
 }
 
@@ -286,7 +322,7 @@ export const getBankByAccountId = async ({ accountId }: getBankByAccountIdProps)
       [Query.equal('accountId', [accountId])]
     )
 
-    if(bank.total !== 1) return null;
+    if (bank.total !== 1) return null;
 
     return parseStringify(bank.documents[0]);
   } catch (error) {
