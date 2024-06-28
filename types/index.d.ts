@@ -244,6 +244,7 @@ declare interface TransactionTableProps {
   transactions: Transaction[];
 }
 
+
 declare interface CategoryProps {
   category: CategoryCount;
 }
