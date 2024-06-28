@@ -15,5 +15,5 @@ export default function GlobalError({ error }) {
         <Error />
       </body>
     </html>
-  );
+  )
 }
