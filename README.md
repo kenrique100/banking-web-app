@@ -117,4 +117,6 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser to view the project.
+App site [https://banking-web-heclw1y9p-kenrique100s-projects.vercel.app/] in your browser
+Author [A. Kenrique A. Ngwa]
 
