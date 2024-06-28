@@ -15,6 +15,8 @@ export const sidebarLinks = [
     label: "Transaction History",
   },
   {
+
+    
     imgURL: "/icons/money-send.svg",
     route: "/payment-transfer",
     label: "Transfer Funds",
